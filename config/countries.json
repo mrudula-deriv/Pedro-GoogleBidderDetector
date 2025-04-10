@@ -1,0 +1,54 @@
+{
+  "countries": [
+    {
+      "country": "Sri Lanka",
+      "glcode": "LK",
+      "code": "199"
+    },
+    {
+      "country": "South Africa",
+      "glcode": "ZA",
+      "code": "109"
+    },
+    {
+      "country": "Pakistan",
+      "glcode": "PK",
+      "code": "198"
+    },
+    {
+      "country": "Puerto Rico",
+      "glcode": "PR",
+      "code": "242"
+    },
+    {
+      "country": "Singapore",
+      "glcode": "SG",
+      "code": ["107", "154", "37"]
+    },
+    {
+      "country": "Thailand",
+      "glcode": "TH",
+      "code": "101"
+    },
+    {
+      "country": "UK",
+      "glcode": "GB",
+      "code": ["53", "178", "5", "15", "263", "90"]
+    },
+    {
+      "country": "USA",
+      "glcode": "US",
+      "code": ["95", "19", "9", "18", "172", "165", "161", "6", "70", "74", "71", "54", "202", "26", "155", "168", "75", "94", "204", "1", "207", "2", "166", "25"]
+    },
+    {
+      "country": "Australia",
+      "glcode": "AU",
+      "code": ["93", "208", "156", "209", "81", "162", "219"]
+    },
+    {
+      "country": "Canada",
+      "glcode": "CA",
+      "code": ["45", "79", "169", "181"]
+    }
+  ]
+} 
