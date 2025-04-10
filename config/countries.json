@@ -1,14 +1,104 @@
 {
   "countries": [
     {
-      "country": "Sri Lanka",
-      "glcode": "LK",
-      "code": "199"
+      "country": "Australia",
+      "glcode": "AU",
+      "code": ["93", "208", "156", "209", "81", "162", "219"]
     },
     {
-      "country": "South Africa",
-      "glcode": "ZA",
-      "code": "109"
+      "country": "Belarus",
+      "glcode": "BY",
+      "code": "186"
+    },
+    {
+      "country": "Belgium",
+      "glcode": "BE",
+      "code": "85"
+    },
+    {
+      "country": "Bolivia",
+      "glcode": "BO",
+      "code": "232"
+    },
+    {
+      "country": "Brazil",
+      "glcode": "BR",
+      "code": ["91", "163"]
+    },
+    {
+      "country": "Canada",
+      "glcode": "CA",
+      "code": ["45", "79", "169", "181"]
+    },
+    {
+      "country": "Cayman Islands",
+      "glcode": "KY",
+      "code": "245"
+    },
+    {
+      "country": "Colombia",
+      "glcode": "CO",
+      "code": "131"
+    },
+    {
+      "country": "Costa Rica",
+      "glcode": "CR",
+      "code": "100"
+    },
+    {
+      "country": "Cuba",
+      "glcode": "CU",
+      "code": "246"
+    },
+    {
+      "country": "Guam",
+      "glcode": "GU",
+      "code": "238"
+    },
+    {
+      "country": "Hong Kong",
+      "glcode": "HK",
+      "code": ["160", "114"]
+    },
+    {
+      "country": "Indonesia",
+      "glcode": "ID",
+      "code": "112"
+    },
+    {
+      "country": "Isle of Man",
+      "glcode": "IM",
+      "code": "129"
+    },
+    {
+      "country": "Jamaica",
+      "glcode": "JM",
+      "code": "241"
+    },
+    {
+      "country": "Jersey",
+      "glcode": "JE",
+      "code": "188"
+    },
+    {
+      "country": "Kenya",
+      "glcode": "KE",
+      "code": "176"
+    },
+    {
+      "country": "Malaysia",
+      "glcode": "MY",
+      "code": "111"
+    },
+    {
+      "country": "Malta",
+      "glcode": "MT",
+      "code": "134"
+    },
+    {
+      "country": "Myanmar",
+      "glcode": "MM",
+      "code": "196"
     },
     {
       "country": "Pakistan",
@@ -26,9 +116,24 @@
       "code": ["107", "154", "37"]
     },
     {
+      "country": "South Africa",
+      "glcode": "ZA",
+      "code": "109"
+    },
+    {
+      "country": "Sri Lanka",
+      "glcode": "LK",
+      "code": "199"
+    },
+    {
       "country": "Thailand",
       "glcode": "TH",
       "code": "101"
+    },
+    {
+      "country": "United Arab Emirates",
+      "glcode": "AE",
+      "code": "264"
     },
     {
       "country": "UK",
@@ -41,14 +146,10 @@
       "code": ["95", "19", "9", "18", "172", "165", "161", "6", "70", "74", "71", "54", "202", "26", "155", "168", "75", "94", "204", "1", "207", "2", "166", "25"]
     },
     {
-      "country": "Australia",
-      "glcode": "AU",
-      "code": ["93", "208", "156", "209", "81", "162", "219"]
-    },
-    {
-      "country": "Canada",
-      "glcode": "CA",
-      "code": ["45", "79", "169", "181"]
+      "country": "Uzbekistan",
+      "glcode": "UZ",
+      "code": "128"
     }
   ]
-} 
+}
+ 
