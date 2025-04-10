@@ -1,0 +1,7 @@
+aiohttp==3.9.1
+playwright==1.41.1
+openai==1.6.1
+supabase==2.0.3
+python-dotenv==1.0.0
+pytz==2024.1
+requests==2.31.0
