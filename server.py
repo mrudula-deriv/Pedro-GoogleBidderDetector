@@ -183,32 +183,32 @@ MAX_RETRIES = 8
 # %%
 def analyze_ad_and_url(ad, url=None):
     try:
-        url_to_analyze = url or ad.get('link', '')
-        
+        url_to_analyze = url or ad.get('final_link', '')
+        print("URL to analyze:", url_to_analyze)
         prompt = f"""
-        Analyze this ad content and URL for Deriv affiliate patterns:
+        Analyze this URL for Deriv ad patterns:
+        {url_to_analyze}
+
+        1. First check if this is a Deriv ad (contains 'deriv.com' or redirects to it)
+        2. If it's a Deriv ad, determine if it's:
+           a) Affiliate ad: Check for patterns like:
+              - MyAffiliates: "affiliate_" followed by numbers
+              - DynamicWorks: "utm_source=cu" or "utm_source=c" followed by numbers
+           b) Direct PPC ad: No affiliate parameters, direct marketing by Deriv
         
-        URL: {url_to_analyze}
-        Title: {ad.get('title', '')}
-        Displayed Link: {ad.get('displayed_link', '')}
-        
-        Check for:
-        1. "deriv.com" anywhere in the content
-        2. MyAffiliates pattern: "affiliate_" followed by numbers
-        3. DynamicWorks pattern: "utm_source=cu" or "utm_source=c" followed by numbers
-        
-        Return a JSON object with:
-        1. contains_deriv (boolean)
-        2. affiliate_type (string: "MyAffiliates" or "DynamicWorks" or null)
-        3. affiliate_id (number or null)
-        4. found_in (array of where patterns were found: "url", "title", "displayed_link")
-        5. flag (number: 1 if both contains_deriv AND affiliate_id are true, 0 otherwise)
+        Return a JSON with only these fields:
+        1. affiliate_type: "MyAffiliates" or "DynamicWorks" or null
+        2. affiliate_id: number (if affiliate found) or null
+        3. flag: 1 if Deriv affiliate ad, 0 if Deriv PPC ad, null if not a Deriv ad
         """
         
         response = client.chat.completions.create(
             model="o3-mini",
             messages=[
-                {"role": "system", "content": "You are an ad analysis assistant. Analyze URLs and content for specific patterns."},
+                {
+                    "role": "system", 
+                    "content": "You are a URL analyzer specializing in identifying Deriv's marketing URLs. You can distinguish between affiliate marketing URLs and direct PPC advertising URLs based on their parameters and structure."
+                },
                 {"role": "user", "content": prompt}
             ],
             response_format={ "type": "json_object" }
@@ -216,19 +216,16 @@ def analyze_ad_and_url(ad, url=None):
         
         # Parse AI response
         analysis = json.loads(response.choices[0].message.content)
+        print("Analysis:", analysis)
         
-        # Ensure flag is set correctly based on contains_deriv and affiliate_id
-        analysis['flag'] = 1 if analysis.get('contains_deriv') and analysis.get('affiliate_id') else 0
-        
+        # Return simplified response
         return analysis
         
     except Exception as e:
         logger.error(f"Error in ad analysis: {str(e)}")
         return {
-            "contains_deriv": False,
             "affiliate_type": None,
             "affiliate_id": None,
-            "found_in": [],
             "flag": 0,
             "error": str(e)
         }
@@ -362,7 +359,8 @@ async def google_search(q, timestamp_str=None, session=None, retries=0):
         user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
             "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/537.36",
         ]
@@ -548,7 +546,7 @@ async def get_ads_for_keyword(keyword, session=None):  # session is now a parame
                 analysis = analyze_ad_and_url(ad, ad['final_link'])  # Assuming this doesn't need a session
                 
                 # Set flag using same logic as original
-                ad['flag'] = 1 if analysis['contains_deriv'] and analysis['affiliate_id'] else 0
+                ad['flag'] = analysis['flag']
                 
                 # Only add affiliate info if flag is 1
                 if ad['flag'] == 1:
@@ -582,16 +580,10 @@ async def get_ads_for_keyword(keyword, session=None):  # session is now a parame
 # %%
 async def save_to_supabase(ads_data, country, session=None):
     """
-    Save ads data to Supabase only if flag=1
-    
-    Args:
-        ads_data (list/dict): The ads data to save
-        country (str): The VPN country used for the search
-        session (aiohttp.ClientSession, optional): The aiohttp client session (if needed for Supabase)
+    Save ads data to Supabase only if flag=1 and track first detection date by country
     """
     try:
         if isinstance(ads_data, dict) and 'message' in ads_data:
-            # No ads found - don't save to database
             print(f"No ads found for keyword: {ads_data['keyword']} in {country}")
             return None
             
@@ -604,30 +596,49 @@ async def save_to_supabase(ads_data, country, session=None):
             
         # Process affiliate ads
         for ad in affiliate_ads:
+            affiliate_id = str(ad.get('affiliate_id'))
+            
+            # Convert current timestamp to yyyy-mm-dd format
+            timestamp_str = ad['timestamp'].replace('T', ' ').split('.')[0]
+            current_timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
+
+            # Check if this affiliate_id exists in the database for this country
+            existing_record = supabase.table('affiliate_links')\
+                .select('affiliate_id, FirstDetected')\
+                .eq('affiliate_id', affiliate_id)\
+                .eq('country', country)\
+                .order('FirstDetected', desc=False)\
+                .limit(1)\
+                .execute()
+
+            # Determine FirstDetected date
+            if existing_record.data and existing_record.data[0].get('FirstDetected'):
+                first_date = existing_record.data[0]['FirstDetected']
+            else:
+                first_date = current_timestamp
+
             ad_data = {
                 'keyword': ad['keyword'],
                 'country': country,
-                'timestamp': ad['timestamp'],
+                'timestamp': current_timestamp,  # Now in yyyy-mm-dd format
                 'title': ad.get('title'),
                 'displayed_link': ad.get('displayed_link'),
                 'link': ad['link'],
                 'final_link': ad['final_link'],
                 'redirect_chain': json.dumps(ad['redirect_chain']),
-                'flag': 1,  # We know it's 1 since we filtered
-                'affiliate_id': str(ad.get('affiliate_id')),
-                'affiliate_type': ad.get('affiliate_type')
+                'flag': 1,
+                'affiliate_id': affiliate_id,
+                'affiliate_type': ad.get('affiliate_type'),
+                'FirstDetected': first_date  # Also in yyyy-mm-dd format
             }
             
-            # Example: If Supabase has an async client that needs a session
-            #if session:
-            #    result = await supabase.table('affiliate_links').insert(ad_data).execute(session=session)
-            #else:
             result = supabase.table('affiliate_links').insert(ad_data).execute()
             
-            print(f"Saved affiliate ad for {country} - ID: {ad_data['affiliate_id']}, Type: {ad_data['affiliate_type']}")
+            print(f"Saved affiliate ad for {country} - ID: {affiliate_id}, Type: {ad_data['affiliate_type']}, First Detected: {first_date}")
             
     except Exception as e:
         print(f"Error saving to Supabase: {str(e)}")
+        logger.error(f"Error saving to Supabase: {str(e)}")
         raise
 
 
